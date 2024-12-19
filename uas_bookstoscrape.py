@@ -238,7 +238,6 @@ def main():
 
     elif options == "EDA":
         st.header("Analisis Eksplorasi Data (EDA)")
-        df = scrape_books()
         df = clean_and_preprocess_data(df)
         perform_eda(df)
 
