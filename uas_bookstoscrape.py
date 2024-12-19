@@ -522,13 +522,12 @@ def main():
         st.header("Scraping Data")
         df = scrape_books()
         st.dataframe(df.head())
-        st.write("Data berhasil di-scrape!")
+        st.write("Contoh tampilan data yang didapat setelah melakukan scraping")
 
     elif options == "Visualisasi":
         st.header("Visualisasi Data")
         df = scrape_books()
         df = clean_and_preprocess_data(df)
-        visualize_data(df)
 
     elif options == "Algoritma 1: Clustering":
         st.header("Algoritma 1: K-Means Clustering")
@@ -546,6 +545,3 @@ def main():
         st.header("Kesimpulan")
         st.write("Dataset buku menunjukkan distribusi harga dan rating yang dapat dikategorikan ke dalam klaster menggunakan K-Means.")
         st.write("Model regresi menunjukkan hubungan yang lemah antara rating dan harga buku, dengan R-squared rendah.")
-
-if __name__ == "__main__":
-    main()
