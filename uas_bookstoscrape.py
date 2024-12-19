@@ -69,9 +69,6 @@ def scrape_books():
 books_df = scrape_books()
 books_df.to_csv('books_data.csv', index=False)
 
-from google.colab import files
-files.download('books_data.csv')
-
 df = pd.read_csv('books_data.csv')
 df.head()
 
