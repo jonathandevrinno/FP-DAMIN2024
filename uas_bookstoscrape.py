@@ -106,6 +106,52 @@ def clean_and_preprocess_data(df):
 
     return df
 
+# Fungsi untuk Menampilkan Preprocessing di Streamlit
+def show_preprocessing(df):
+    st.subheader("Langkah-Langkah Preprocessing")
+    st.write("Berikut adalah langkah-langkah preprocessing yang dilakukan pada dataset:")
+
+    # Menampilkan langkah dan contoh kode
+    preprocessing_steps = [
+        "1. Menghapus kolom 'Availability' yang tidak informatif.",
+        "2. Menghapus duplikasi data.",
+        "3. Mengubah kolom 'Rating' dari teks menjadi angka.",
+        "4. Menghapus baris dengan nilai NaN.",
+        "5. Mengonversi kolom 'Price' menjadi tipe numerik."
+    ]
+
+    for step in preprocessing_steps:
+        st.write(f"- {step}")
+
+    # Contoh kode preprocessing
+    st.code(
+        """python
+# Contoh kode preprocessing
+rating_mapping = {
+    'One': 1,
+    'Two': 2,
+    'Three': 3,
+    'Four': 4,
+    'Five': 5
+}
+
+# Menghapus kolom yang tidak diperlukan
+df.drop(columns=['Availability'], inplace=True)
+
+# Menghapus duplikasi
+df.drop_duplicates(inplace=True)
+
+# Mengubah rating menjadi angka
+df['Rating'] = df['Rating'].map(rating_mapping)
+
+# Menghapus nilai NaN
+df.dropna(inplace=True)
+
+# Konversi harga menjadi tipe numerik
+df['Price'] = pd.to_numeric(df['Price'], errors='coerce')
+        """
+    )
+
 # Fungsi untuk Unduh CSV
 def download_csv(df):
     csv = df.to_csv(index=False)
@@ -173,7 +219,7 @@ def main():
 
     # Sidebar Menu
     st.sidebar.header("Navigasi")
-    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "EDA", "Kesimpulan"])
+    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "Preprocessing", "EDA", "Kesimpulan"])
 
     if options == "Scrape Data":
         st.header("Scraping Data")
@@ -181,6 +227,14 @@ def main():
         st.dataframe(df.head())
         download_csv(df)
         st.write("Data berhasil di-scrape!")
+
+    elif options == "Preprocessing":
+        st.header("Preprocessing Data")
+        df = scrape_books()
+        show_preprocessing(df)
+        df = clean_and_preprocess_data(df)
+        st.write("Dataset setelah preprocessing:")
+        st.dataframe(df.head())
 
     elif options == "EDA":
         st.header("Analisis Eksplorasi Data (EDA)")
