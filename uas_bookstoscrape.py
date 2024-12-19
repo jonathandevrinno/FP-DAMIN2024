@@ -17,6 +17,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import mean_squared_error, r2_score
 
 # Fungsi Scraping Data
+@st.cache
 def scrape_books():
     import requests
     from bs4 import BeautifulSoup
@@ -58,12 +59,19 @@ def scrape_books():
 
 # Fungsi Preprocessing
 def clean_and_preprocess_data(df):
+    st.subheader("Langkah Preprocessing Data")
+    steps = []
+
     # Menghapus kolom yang tidak informatif
     if 'Availability' in df.columns:
         df.drop(columns=['Availability'], inplace=True)
+        steps.append("Menghapus kolom 'Availability' karena tidak informatif.")
 
     # Menangani duplikasi data
+    initial_len = len(df)
     df.drop_duplicates(inplace=True)
+    final_len = len(df)
+    steps.append(f"Menghapus duplikasi data. Jumlah data sebelum: {initial_len}, setelah: {final_len}.")
 
     # Mengubah kolom 'Rating' dari teks menjadi angka
     rating_mapping = {
@@ -75,16 +83,26 @@ def clean_and_preprocess_data(df):
     }
     if 'Rating' in df.columns:
         df['Rating'] = df['Rating'].map(rating_mapping)
+        steps.append("Mengubah kolom 'Rating' dari teks menjadi angka.")
 
     # Menghapus baris dengan nilai NaN (jika ada setelah pemetaan)
+    nan_before = df.isna().sum().sum()
     df.dropna(inplace=True)
+    nan_after = df.isna().sum().sum()
+    if nan_before > nan_after:
+        steps.append(f"Menghapus baris dengan nilai NaN. Sebelum: {nan_before}, Setelah: {nan_after}.")
 
     # Mengonversi kolom 'Price' menjadi tipe numerik jika belum
     if df['Price'].dtype != 'float':
         df['Price'] = pd.to_numeric(df['Price'], errors='coerce')
+        steps.append("Mengonversi kolom 'Price' menjadi tipe numerik.")
 
     # Menghapus baris dengan nilai NaN (jika ada setelah konversi)
     df.dropna(inplace=True)
+
+    # Menampilkan langkah preprocessing
+    for step in steps:
+        st.write(f"- {step}")
 
     return df
 
