@@ -9,15 +9,15 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 from sklearn.metrics import mean_squared_error, r2_score
 
 # Fungsi Scraping Data
+@st.cache
 def scrape_books():
     import requests
     from bs4 import BeautifulSoup
@@ -74,87 +74,121 @@ def download_csv(df):
         mime='text/csv',
     )
 
-# Fungsi Visualisasi
-def visualize_data(df):
+# Fungsi untuk Visualisasi dengan Dropdown
+def visualize_data_with_dropdown(df):
+    st.subheader("Visualisasi Data")
+    st.write("Pilih salah satu visualisasi dari dropdown untuk melihat grafik.")
+
+    # Dropdown untuk memilih visualisasi
+    options = st.selectbox(
+        "Pilih Visualisasi:",
+        ["Distribusi Harga Buku", "Distribusi Rating Buku", "Korelasi Harga dan Rating"]
+    )
+
+    if options == "Distribusi Harga Buku":
+        st.write("Histogram dan KDE menunjukkan distribusi harga buku.")
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.histplot(df['Price'], bins=30, kde=True, color='blue', ax=ax)
+        ax.set_title('Distribusi Harga Buku')
+        ax.set_xlabel('Harga (£)')
+        ax.set_ylabel('Frekuensi')
+        st.pyplot(fig)
+
+    elif options == "Distribusi Rating Buku":
+        st.write("Grafik berikut menunjukkan jumlah buku untuk setiap rating.")
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.countplot(x='Rating', data=df, palette='viridis', ax=ax)
+        ax.set_title('Distribusi Rating Buku')
+        ax.set_xlabel('Rating')
+        ax.set_ylabel('Jumlah Buku')
+        st.pyplot(fig)
+
+    elif options == "Korelasi Harga dan Rating":
+        st.write("Scatter plot berikut menunjukkan hubungan antara harga dan rating.")
+        fig, ax = plt.subplots(figsize=(8, 6))
+        sns.scatterplot(x='Rating', y='Price', data=df, alpha=0.7, color='green', ax=ax)
+        ax.set_title('Korelasi Harga dan Rating Buku')
+        ax.set_xlabel('Rating')
+        ax.set_ylabel('Harga (£)')
+        st.pyplot(fig)
+
+# Fungsi untuk Analisis Eksplorasi Data (EDA)
+def perform_eda(df):
+    st.subheader("Statistik Deskriptif")
+    st.write("Tabel statistik deskriptif berikut memberikan gambaran umum tentang data buku.")
+    st.write(df.describe())
+
+    # Visualisasi Harga Buku
     st.subheader("Distribusi Harga Buku")
-    st.write("Grafik ini menunjukkan distribusi harga buku yang telah di-scrape.")
-    fig, ax = plt.subplots()
-    sns.histplot(df['Price'], bins=30, kde=True, ax=ax)
+    st.write("Histogram dan boxplot di bawah ini menunjukkan distribusi harga buku.")
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Histogram Harga Buku
+    sns.histplot(df['Price'], bins=30, kde=True, color='blue', ax=ax[0])
+    ax[0].set_title('Distribusi Harga Buku')
+    ax[0].set_xlabel('Harga (£)')
+    ax[0].set_ylabel('Frekuensi')
+
+    # Boxplot Harga Buku
+    sns.boxplot(x=df['Price'], color='orange', ax=ax[1])
+    ax[1].set_title('Variasi Harga Buku')
+    ax[1].set_xlabel('Harga (£)')
+
     st.pyplot(fig)
 
+    # Distribusi Rating Buku
     st.subheader("Distribusi Rating Buku")
-    st.write("Grafik ini menunjukkan distribusi rating buku dalam dataset.")
-    fig, ax = plt.subplots()
-    sns.countplot(x='Rating', data=df, palette='viridis', ax=ax)
+    st.write("Distribusi berikut menunjukkan jumlah buku untuk setiap nilai rating.")
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.countplot(x='Rating', hue='Rating', data=df, palette='viridis', dodge=False, ax=ax)
+    ax.set_title('Distribusi Rating Buku')
+    ax.set_xlabel('Rating')
+    ax.set_ylabel('Jumlah Buku')
     st.pyplot(fig)
 
-# Fungsi Clustering
-def perform_clustering(df):
-    st.subheader("Clustering Buku Berdasarkan Harga dan Rating")
-    st.write("Clustering ini membagi buku ke dalam 3 kelompok berdasarkan harga dan rating.")
-    kmeans = KMeans(n_clusters=3, random_state=42)
-    df['Cluster'] = kmeans.fit_predict(df[['Price', 'Rating']])
-    fig, ax = plt.subplots()
-    sns.scatterplot(x='Price', y='Rating', hue='Cluster', palette='viridis', data=df, ax=ax)
+    # Korelasi Harga dan Rating
+    st.subheader("Korelasi Harga dan Rating Buku")
+    st.write("Scatter plot berikut menunjukkan hubungan antara rating dan harga buku.")
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.scatterplot(x='Rating', y='Price', data=df, alpha=0.7, color='green', ax=ax)
+    ax.set_title('Korelasi Harga dan Rating Buku')
+    ax.set_xlabel('Rating')
+    ax.set_ylabel('Harga (£)')
     st.pyplot(fig)
 
-# Fungsi Regresi
-def perform_regression(df):
-    st.subheader("Regresi untuk Prediksi Harga Berdasarkan Rating")
-    st.write("Model regresi digunakan untuk memprediksi harga buku berdasarkan rating.")
-    X = df[['Rating']]
-    y = df['Price']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-
-    st.write(f"Mean Squared Error: {mse:.2f}")
-    st.write(f"R-squared: {r2:.2f}")
-
-    fig, ax = plt.subplots()
-    sns.scatterplot(x=y_test, y=y_pred, ax=ax)
-    ax.set_xlabel('Actual Price')
-    ax.set_ylabel('Predicted Price')
-    st.pyplot(fig)
+    # Korelasi Numerik
+    st.subheader("Korelasi Numerik")
+    st.write("Matriks korelasi menunjukkan hubungan antara harga dan rating.")
+    correlation = df[['Price', 'Rating']].corr()
+    st.write(correlation)
 
 # Main Program
 def main():
-    st.title("Web scrapping kelompok 8")
-    st.write("Aplikasi ini menyediakan dataset dan hasil analisa yang diambil dari website bookstoscrape.com")
+    st.title("Analisis Buku dengan Streamlit")
+    st.write("Aplikasi ini menyediakan analisis dataset buku yang diambil dari website Books to Scrape.")
 
     # Sidebar Menu
     st.sidebar.header("Navigasi")
-    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "Visualisasi", "Algoritma 1: Clustering", "Algoritma 2: Regresi", "Kesimpulan"])
+    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "Visualisasi", "EDA", "Kesimpulan"])
 
     if options == "Scrape Data":
         st.header("Scraping Data")
         df = scrape_books()
         st.dataframe(df.head())
         download_csv(df)
-        st.write("Klik untuk mendownload dataset")
+        st.write("Data berhasil di-scrape!")
 
     elif options == "Visualisasi":
         st.header("Visualisasi Data")
         df = scrape_books()
         df = clean_and_preprocess_data(df)
-        visualize_data(df)
+        visualize_data_with_dropdown(df)
 
-    elif options == "Algoritma 1: Clustering":
-        st.header("Algoritma 1: K-Means Clustering")
+    elif options == "EDA":
+        st.header("Analisis Eksplorasi Data (EDA)")
         df = scrape_books()
         df = clean_and_preprocess_data(df)
-        perform_clustering(df)
-
-    elif options == "Algoritma 2: Regresi":
-        st.header("Algoritma 2: Regresi Linear")
-        df = scrape_books()
-        df = clean_and_preprocess_data(df)
-        perform_regression(df)
+        perform_eda(df)
 
     elif options == "Kesimpulan":
         st.header("Kesimpulan")
