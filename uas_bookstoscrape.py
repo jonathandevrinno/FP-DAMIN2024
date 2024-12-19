@@ -522,7 +522,6 @@ def main():
         st.header("Scraping Data")
         df = scrape_books()
         st.dataframe(df.head())
-        download_csv(df)
         st.write("Data berhasil di-scrape!")
 
     elif options == "Visualisasi":
