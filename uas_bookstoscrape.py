@@ -73,44 +73,6 @@ def download_csv(df):
         mime='text/csv',
     )
 
-# Fungsi untuk Visualisasi dengan Dropdown
-def visualize_data_with_dropdown(df):
-    st.subheader("Visualisasi Data")
-    st.write("Pilih salah satu visualisasi dari dropdown untuk melihat grafik.")
-
-    # Dropdown untuk memilih visualisasi
-    options = st.selectbox(
-        "Pilih Visualisasi:",
-        ["Distribusi Harga Buku", "Distribusi Rating Buku", "Korelasi Harga dan Rating"]
-    )
-
-    if options == "Distribusi Harga Buku":
-        st.write("Histogram dan KDE menunjukkan distribusi harga buku.")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.histplot(df['Price'], bins=30, kde=True, color='blue', ax=ax)
-        ax.set_title('Distribusi Harga Buku')
-        ax.set_xlabel('Harga (£)')
-        ax.set_ylabel('Frekuensi')
-        st.pyplot(fig)
-
-    elif options == "Distribusi Rating Buku":
-        st.write("Grafik berikut menunjukkan jumlah buku untuk setiap rating.")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.countplot(x='Rating', data=df, palette='viridis', ax=ax)
-        ax.set_title('Distribusi Rating Buku')
-        ax.set_xlabel('Rating')
-        ax.set_ylabel('Jumlah Buku')
-        st.pyplot(fig)
-
-    elif options == "Korelasi Harga dan Rating":
-        st.write("Scatter plot berikut menunjukkan hubungan antara harga dan rating.")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.scatterplot(x='Rating', y='Price', data=df, alpha=0.7, color='green', ax=ax)
-        ax.set_title('Korelasi Harga dan Rating Buku')
-        ax.set_xlabel('Rating')
-        ax.set_ylabel('Harga (£)')
-        st.pyplot(fig)
-
 # Fungsi untuk Analisis Eksplorasi Data (EDA)
 def perform_eda(df):
     st.subheader("Statistik Deskriptif")
@@ -168,7 +130,7 @@ def main():
 
     # Sidebar Menu
     st.sidebar.header("Navigasi")
-    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "Visualisasi", "EDA", "Kesimpulan"])
+    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "EDA", "Kesimpulan"])
 
     if options == "Scrape Data":
         st.header("Scraping Data")
@@ -176,12 +138,6 @@ def main():
         st.dataframe(df.head())
         download_csv(df)
         st.write("Data berhasil di-scrape!")
-
-    elif options == "Visualisasi":
-        st.header("Visualisasi Data")
-        df = scrape_books()
-        df = clean_and_preprocess_data(df)
-        visualize_data_with_dropdown(df)
 
     elif options == "EDA":
         st.header("Analisis Eksplorasi Data (EDA)")
