@@ -124,8 +124,8 @@ def perform_regression(df):
 
 # Main Program
 def main():
-    st.title("Analisis Buku dengan Streamlit")
-    st.write("Aplikasi ini menyediakan analisis dataset buku yang diambil dari website Books to Scrape.")
+    st.title("Web scrapping kelompok 8")
+    st.write("Aplikasi ini menyediakan dataset dan hasil analisa yang diambil dari website bookstoscrape.com")
 
     # Sidebar Menu
     st.sidebar.header("Navigasi")
