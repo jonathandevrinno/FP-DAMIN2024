@@ -58,9 +58,34 @@ def scrape_books():
 
 # Fungsi Preprocessing
 def clean_and_preprocess_data(df):
-    rating_mapping = {'One': 1, 'Two': 2, 'Three': 3, 'Four': 4, 'Five': 5}
-    df['Rating'] = df['Rating'].map(rating_mapping)
+    # Menghapus kolom yang tidak informatif
+    if 'Availability' in df.columns:
+        df.drop(columns=['Availability'], inplace=True)
+
+    # Menangani duplikasi data
+    df.drop_duplicates(inplace=True)
+
+    # Mengubah kolom 'Rating' dari teks menjadi angka
+    rating_mapping = {
+        'One': 1,
+        'Two': 2,
+        'Three': 3,
+        'Four': 4,
+        'Five': 5
+    }
+    if 'Rating' in df.columns:
+        df['Rating'] = df['Rating'].map(rating_mapping)
+
+    # Menghapus baris dengan nilai NaN (jika ada setelah pemetaan)
     df.dropna(inplace=True)
+
+    # Mengonversi kolom 'Price' menjadi tipe numerik jika belum
+    if df['Price'].dtype != 'float':
+        df['Price'] = pd.to_numeric(df['Price'], errors='coerce')
+
+    # Menghapus baris dengan nilai NaN (jika ada setelah konversi)
+    df.dropna(inplace=True)
+
     return df
 
 # Fungsi untuk Unduh CSV
