@@ -136,7 +136,7 @@ def main():
         df = scrape_books()
         st.dataframe(df.head())
         download_csv(df)
-        st.write("Data berhasil di-scrape!")
+        st.write("Klik untuk mendownload dataset")
 
     elif options == "Visualisasi":
         st.header("Visualisasi Data")
