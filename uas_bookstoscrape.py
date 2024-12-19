@@ -4,11 +4,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.cluster import KMeans
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 
 # Fungsi Scraping Data
-@st.cache
 def scrape_books():
     import requests
     from bs4 import BeautifulSoup
@@ -97,52 +96,6 @@ def clean_and_preprocess_data(df):
 
     return df
 
-# Fungsi untuk Menampilkan Preprocessing di Streamlit
-def show_preprocessing(df):
-    st.subheader("Langkah-Langkah Preprocessing")
-    st.write("Berikut adalah langkah-langkah preprocessing yang dilakukan pada dataset:")
-
-    # Menampilkan langkah dan contoh kode
-    preprocessing_steps = [
-        "1. Menghapus kolom 'Availability' yang tidak informatif.",
-        "2. Menghapus duplikasi data.",
-        "3. Mengubah kolom 'Rating' dari teks menjadi angka.",
-        "4. Menghapus baris dengan nilai NaN.",
-        "5. Mengonversi kolom 'Price' menjadi tipe numerik."
-    ]
-
-    for step in preprocessing_steps:
-        st.write(f"- {step}")
-
-    # Contoh kode preprocessing
-    st.code(
-        """python
-# Contoh kode preprocessing
-rating_mapping = {
-    'One': 1,
-    'Two': 2,
-    'Three': 3,
-    'Four': 4,
-    'Five': 5
-}
-
-# Menghapus kolom yang tidak diperlukan
-df.drop(columns=['Availability'], inplace=True)
-
-# Menghapus duplikasi
-df.drop_duplicates(inplace=True)
-
-# Mengubah rating menjadi angka
-df['Rating'] = df['Rating'].map(rating_mapping)
-
-# Menghapus nilai NaN
-df.dropna(inplace=True)
-
-# Konversi harga menjadi tipe numerik
-df['Price'] = pd.to_numeric(df['Price'], errors='coerce')
-        """
-    )
-
 # Fungsi untuk Unduh CSV
 def download_csv(df):
     csv = df.to_csv(index=False)
@@ -203,6 +156,42 @@ def perform_eda(df):
     correlation = df[['Price', 'Rating']].corr()
     st.write(correlation)
 
+# Fungsi untuk Menjalankan Skenario
+def scenario_prediction(cleaned_books_data):
+    st.subheader("Skenario 1: Prediksi Harga Buku berdasarkan Rating")
+
+    # Membagi fitur dan target
+    X = cleaned_books_data[['Rating']]
+    y = cleaned_books_data['Price']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Dropdown untuk memilih model
+    model_option = st.selectbox("Pilih Model:", ["Linear Regression", "Decision Tree Regression"])
+
+    if model_option == "Linear Regression":
+        model = LinearRegression()
+    else:
+        model = DecisionTreeRegressor(random_state=42)
+
+    # Melatih model
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    # Evaluasi Model
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+
+    st.write(f"**Mean Squared Error (MSE):** {mse:.2f}")
+    st.write(f"**R-squared:** {r2:.2f}")
+
+    # Visualisasi Prediksi
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.scatterplot(x=y_test, y=y_pred, ax=ax)
+    ax.set_title(f"Hasil Prediksi dengan {model_option}")
+    ax.set_xlabel("Harga Aktual")
+    ax.set_ylabel("Harga Prediksi")
+    st.pyplot(fig)
+
 # Main Program
 def main():
     st.title("Analisis Buku dengan Streamlit")
@@ -210,7 +199,7 @@ def main():
 
     # Sidebar Menu
     st.sidebar.header("Navigasi")
-    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "Preprocessing", "EDA", "Kesimpulan"])
+    options = st.sidebar.radio("Pilih Langkah:", ["Scrape Data", "Preprocessing", "EDA", "Scenario", "Kesimpulan"])
 
     if options == "Scrape Data":
         st.header("Scraping Data")
@@ -222,7 +211,7 @@ def main():
     elif options == "Preprocessing":
         st.header("Preprocessing Data")
         df = scrape_books()
-        show_preprocessing(df)
+        df = clean_and_preprocess_data(df)
         st.write("Dataset setelah preprocessing:")
         st.dataframe(df.head())
 
@@ -231,6 +220,12 @@ def main():
         df = scrape_books()
         df = clean_and_preprocess_data(df)
         perform_eda(df)
+
+    elif options == "Scenario":
+        st.header("Scenario: Prediksi Harga Buku")
+        df = scrape_books()
+        cleaned_books_data = clean_and_preprocess_data(df)
+        scenario_prediction(cleaned_books_data)
 
     elif options == "Kesimpulan":
         st.header("Kesimpulan")
