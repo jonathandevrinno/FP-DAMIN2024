@@ -232,14 +232,12 @@ def main():
         st.header("Preprocessing Data")
         df = scrape_books()
         show_preprocessing(df)
-        df = clean_and_preprocess_data(df)
         st.write("Dataset setelah preprocessing:")
         st.dataframe(df.head())
 
     elif options == "EDA":
         st.header("Analisis Eksplorasi Data (EDA)")
         df = scrape_books()
-        df = clean_and_preprocess_data(df)
         perform_eda(df)
 
     elif options == "Kesimpulan":
